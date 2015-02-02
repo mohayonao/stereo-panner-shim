@@ -4,13 +4,11 @@
 [![Bower](https://img.shields.io/bower/v/stereo-panner-shim.svg?style=flat-square)](https://github.com/mohayonao/stereo-panner-shim)
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](http://mohayonao.mit-license.org/)
 
+## Demo
+
+- [AutoPan](http://mohayonao.github.io/stereo-panner-shim/)
+
 ## Installation
-
-npm:
-
-```
-npm install stereo-panner-shim
-```
 
 bower:
 
@@ -32,17 +30,21 @@ downloads:
 ```javascript
 var audioContext = new AudioContext();
 
-var media = audioContext.createMediaElementSource(audioElement);
-var position = audioContext.createOscillator();
-var panner = audioContext.createStereoPanner(); // <-- NEW!!
+var mediaSource = audioContext.createMediaElementSource(audioElement);
+var autoPanPos = audioContext.createOscillator();
+var stereoPanner = audioContext.createStereoPanner(); // <-- NEW!!
 
-position.frequency.value = 0.05;
+autoPanPos.frequency.value = 0.05;
+autoPanPos.start(audioContext.currentTime);
 
-media.connect(panner);
-position.connect(panner.pan);
-
-panner.connect(audioContext.destination);
+mediaSource.connect(stereoPanner);
+autoPanPos.connect(stereoPanner.pan);
+stereoPanner.connect(audioContext.destination);
 ```
+
+## See Also
+
+- [StereoPannerNode](https://github.com/mohayonao/stereo-panner-node)
 
 ## License
 MIT
