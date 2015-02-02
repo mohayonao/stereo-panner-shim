@@ -10,7 +10,7 @@
       body { font-family: "Source Sans Pro", sans-serif }
       #code { padding: 0; margin: 0; background: white; border: none }
       #app { margin: 10px 0 }
-      #app .btn { width: 150px }
+      #app .btn { width: 100px }
       canvas { width: 100%; height: 240px; background: black }
     </style>
     <script src="//cdnjs.cloudflare.com/ajax/libs/vue/0.11.4/vue.min.js"></script>
@@ -28,7 +28,7 @@
           <h3>AutoPan demo</h3>
           <div class="row">
             <div class="col-md-4">
-              <audio src="./audio/Sunshine_in_My_Heart.mp3" id="audioElement" controls="controls"></audio>
+              <button class="btn btn-default" v-on="click: toggle">{{ !audioBuffer ? "Loading.." : isPlaying ? "Stop" : "Start" }}</button>
               <h5>Parameters</h5>
               <div class="form-group">
                 <label>Rate: </label> <span>{{rate.toFixed(3)}}Hz</span>
@@ -66,6 +66,19 @@
       var visualiser;
 
       var $ = document.getElementById.bind(document);
+
+      function load(url) {
+        return new Promise(function(resolve, reject) {
+          var xhr = new XMLHttpRequest();
+          xhr.responseType = "arraybuffer";
+          xhr.open("GET", url);
+          xhr.onload = function() {
+            resolve(xhr.response);
+          };
+          xhr.onerror = reject;
+          xhr.send();
+        });
+      }
 
       function draw(analyser, canvas) {
         var data = new Uint8Array(1024);
@@ -127,12 +140,21 @@
     </script>
     <script id="example">
     var audioContext = new AudioContext();
-    var mediaSource, autoPanRate, autoPanAmount, stereoPanner;
+    var app = {};
+    var bufferSource, autoPanRate, autoPanAmount, stereoPanner;
+
+    load("./audio/Sunshine_in_My_Heart.mp3").then(function(audioData) {
+      audioContext.decodeAudioData(audioData, function(result) {
+        app.audioBuffer = result;
+      });
+    });
 
     function start() {
-      var audioElement = document.getElementById("audioElement");
+      bufferSource = audioContext.createBufferSource();
+      bufferSource.buffer = app.audioBuffer;
+      bufferSource.loop = true;
+      bufferSource.start(audioContext.currentTime);
 
-      mediaSource = audioContext.createMediaElementSource(audioElement);
       autoPanRate = audioContext.createOscillator();
       autoPanAmount = audioContext.createGain();
       stereoPanner = audioContext.createStereoPanner();
@@ -140,10 +162,19 @@
       autoPanRate.frequency.value = 0.05;
       autoPanRate.start(audioContext.currentTime);
 
-      mediaSource.connect(stereoPanner);
+      bufferSource.connect(stereoPanner);
       autoPanRate.connect(autoPanAmount);
       autoPanAmount.connect(stereoPanner.pan);
       stereoPanner.connect(visualiser);
+    }
+
+    function stop() {
+      bufferSource.stop(audioContext.currentTime);
+      autoPanRate.stop(audioContext.currentTime);
+      bufferSource.disconnect();
+      autoPanRate.disconnect();
+      autoPanAmount.disconnect();
+      stereoPanner.disconnect();
     }
 
     function changeAutoPanParameter(rate, amount, pos) {
@@ -157,13 +188,6 @@
     window.onload = function() {
       "use strict";
 
-      $("audioElement").onplay = function() {
-        if (!visualiser) {
-          initialize();
-          start();
-        }
-      };
-
       function linlin(value, inMin, inMax, outMin, outMax) {
         return (value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin;
       }
@@ -172,14 +196,29 @@
         return Math.pow(outMax / outMin, (value - inMin) / (inMax - inMin)) * outMin;
       }
 
-      new Vue({
+      app = new Vue({
         el: "#app",
         data: {
+          audioBuffer: null,
+          isPlaying: false,
           rate: 0.05,
           amount: 1,
           pos: 0,
         },
         methods: {
+          toggle: function() {
+            if (this.audioBuffer) {
+              this.isPlaying = !this.isPlaying;
+              if (this.isPlaying) {
+                if (!visualiser) {
+                  initialize();
+                }
+                start(this.audioBuffer);
+              } else {
+                stop();
+              }
+            }
+          },
           change: function(e) {
             switch (e.target.name) {
             case "rate":
