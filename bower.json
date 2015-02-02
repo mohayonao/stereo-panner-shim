@@ -1,0 +1,21 @@
+{
+  "name": "stereo-panner-shim",
+  "version": "0.1.0",
+  "authors": [
+    "nao yonamine <mohayonao@gmail.com>"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "lib",
+    "test"
+  ],
+  "keywords": [
+    "webaudioapi",
+    "stereopanner",
+    "shim"
+  ],
+  "license": "MIT",
+  "main": "build/stereo-panner-shim.js"
+}
