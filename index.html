@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>StereoPannerShim</title>
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
+    <style>
+      body { font-family: "Source Sans Pro", sans-serif }
+      #code { padding: 0; margin: 0; background: white; border: none }
+      #app { margin: 10px 0 }
+      #app .btn { width: 150px }
+      canvas { width: 100%; height: 240px; background: black }
+    </style>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/0.11.4/vue.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js"></script>
+    <script src="build/stereo-panner-shim.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div id="app">
+        <div class="page-header">
+          <h1>StereoPannerShim</h1>
+          <div><a href="https://github.com/mohayonao/stereo-panner-shim">GitHub</a></div>
+        </div>
+        <div>
+          <h3>AutoPan demo</h3>
+          <div class="row">
+            <div class="col-md-4">
+              <audio src="./audio/Sunshine_in_My_Heart.mp3" id="audioElement" controls="controls"></audio>
+              <h5>Parameters</h5>
+              <div class="form-group">
+                <label>Rate: </label> <span>{{rate.toFixed(3)}}Hz</span>
+                <input type="range" name="rate" value="27" v-on="change: change">
+              </div>
+              <div class="form-group">
+                <label>Amount: </label> <span>{{amount.toFixed(3)}}</span>
+                <input type="range" name="amount" value="100" v-on="change: change">
+              </div>
+              <div class="form-group">
+                <label>Position: </label> <span>{{pos.toFixed(3)}}</span>
+                <input type="range" name="pos" value="50" v-on="change: change">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <canvas id="canvasL"></canvas>
+            </div>
+            <div class="col-md-4">
+              <canvas id="canvasR"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">example</h3>
+        </div>
+        <div class="panel-body">
+          <pre class="prettyprint" id="code"></pre>
+        </div>
+      </div>
+    </div>
+    <script>
+      var AudioContext = window.AudioContext || window.webkitAudioContext;
+      var visualiser;
+
+      var $ = document.getElementById.bind(document);
+
+      function draw(analyser, canvas) {
+        var data = new Uint8Array(1024);
+
+        analyser.getByteTimeDomainData(data);
+
+        var context = canvas.context;
+
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.beginPath();
+
+        var dx = 1024 / canvas.width;
+        for (var i = 0; i < 1024; i++) {
+          var x = i * dx;
+          var y = 0.5 * (canvas.height - (data[i] - 128) / 128 * canvas.height);
+          context.lineTo(x, y);
+        }
+
+        context.stroke();
+      }
+
+      function initialize() {
+        visualiser = audioContext.createChannelSplitter(2);
+
+        var analyserL = audioContext.createAnalyser();
+        var analyserR = audioContext.createAnalyser();
+        var merger = audioContext.createChannelMerger(2);
+        var canvasL = $("canvasL");
+        var canvasR = $("canvasR");
+
+        canvasL.width = 1024;
+        canvasL.height = 240;
+        canvasL.context = canvasL.getContext("2d");
+        canvasL.context.fillStyle = "#000";
+        canvasL.context.strokeStyle = "#0f0";
+        canvasL.context.lineWidth = 2;
+
+        canvasR.width = 1024;
+        canvasR.height = 240;
+        canvasR.context = canvasR.getContext("2d");
+        canvasR.context.fillStyle = "#000";
+        canvasR.context.strokeStyle = "#0f0";
+        canvasR.context.lineWidth = 2;
+
+        visualiser.connect(analyserL, 0);
+        visualiser.connect(analyserR, 1);
+        analyserL.connect(merger, 0, 0);
+        analyserR.connect(merger, 0, 1);
+        merger.connect(audioContext.destination);
+
+        function animate() {
+          draw(analyserL, canvasL);
+          draw(analyserR, canvasR);
+          requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+      }
+
+    </script>
+    <script id="example">
+    var audioContext = new AudioContext();
+    var mediaSource, autoPanRate, autoPanAmount, stereoPanner;
+
+    function start() {
+      var audioElement = document.getElementById("audioElement");
+
+      mediaSource = audioContext.createMediaElementSource(audioElement);
+      autoPanRate = audioContext.createOscillator();
+      autoPanAmount = audioContext.createGain();
+      stereoPanner = audioContext.createStereoPanner();
+
+      autoPanRate.frequency.value = 0.05;
+      autoPanRate.start(audioContext.currentTime);
+
+      mediaSource.connect(stereoPanner);
+      autoPanRate.connect(autoPanAmount);
+      autoPanAmount.connect(stereoPanner.pan);
+      stereoPanner.connect(visualiser);
+    }
+
+    function changeAutoPanParameter(rate, amount, pos) {
+      autoPanRate.frequency.value = rate;
+      autoPanAmount.gain.value = amount;
+      stereoPanner.pan.value = pos;
+    }
+    </script>
+
+    <script>
+    window.onload = function() {
+      "use strict";
+
+      $("audioElement").onplay = function() {
+        if (!visualiser) {
+          initialize();
+          start();
+        }
+      };
+
+      function linlin(value, inMin, inMax, outMin, outMax) {
+        return (value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin;
+      }
+
+      function linexp(value, inMin, inMax, outMin, outMax) {
+        return Math.pow(outMax / outMin, (value - inMin) / (inMax - inMin)) * outMin;
+      }
+
+      new Vue({
+        el: "#app",
+        data: {
+          rate: 0.05,
+          amount: 1,
+          pos: 0,
+        },
+        methods: {
+          change: function(e) {
+            switch (e.target.name) {
+            case "rate":
+              this.rate = linexp(e.target.value, 0, 100, 0.1, 40);
+              break;
+            case "amount":
+              this.amount = linlin(e.target.value, 0, 100, 0, 1);
+              break;
+            case "pos":
+              this.pos = linlin(e.target.value, 0, 100, -1, +1);
+              break;
+            }
+            if (stereoPanner) {
+              changeAutoPanParameter(this.rate, this.amount, this.pos);
+            }
+          }
+        }
+      });
+
+      // code
+      $("code").textContent = $("example").textContent;
+      prettyPrint();
+    };
+    </script>
+  </body>
+</html>
