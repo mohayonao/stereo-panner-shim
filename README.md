@@ -14,6 +14,12 @@ http://webaudio.github.io/web-audio-api/#the-stereopannernode-interface
 
 ## Installation
 
+npm:
+
+```
+npm install stereo-panner-shim
+```
+
 bower:
 
 ```
@@ -25,31 +31,28 @@ downloads:
 - [stereo-panner-shim.js](https://raw.githubusercontent.com/mohayonao/stereo-panner-shim/master/build/stereo-panner-shim.js)
 - [stereo-panner-shim.min.js](https://raw.githubusercontent.com/mohayonao/stereo-panner-shim/master/build/stereo-panner-shim.min.js)
 
-In a browser:
-```html
-<script src="/path/to/stereo-panner-shim.js"></script>
-```
-
 ## API
-- `AudioContext.prototype.createStereoPanner(): GainNode as StereoPannerNode`
+### AudioContext
+#### Instance Methods
+- `createStereoPanner(): AudioNode as StereoPannerNode`
 
 ## Example
 
 ```javascript
 var audioContext = new AudioContext();
-var audioElement = document.getElementById("audioElement");
+var osc = audioContext.createOscillator();
+var lfo = audioContext.createOscillator();
+var pan = audioContext.createStereoPanner(); // <-- NEW!!
 
-var mediaSource = audioContext.createMediaElementSource(audioElement);
-var autoPanRate = audioContext.createOscillator();
-var stereoPanner = audioContext.createStereoPanner(); // <-- NEW!!
+osc.start(audioContext.currentTime);
 
-autoPanRate.frequency.value = 0.05;
-autoPanRate.start(audioContext.currentTime);
+lfo.frequency.value = 0.05;
+lfo.start(audioContext.currentTime);
 
-mediaSource.connect(stereoPanner);
-autoPanRate.connect(stereoPanner.pan);
+osc.connect(pan);
+lfo.connect(pan.pan);
 
-stereoPanner.connect(audioContext.destination);
+pan.connect(audioContext.destination);
 ```
 
 ## Dependencies
