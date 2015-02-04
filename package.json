@@ -1,13 +1,13 @@
 {
   "name": "stereo-panner-shim",
   "description": "StereoPanner compatibility shim for legacy Web Audio API",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "nao yonamine <mohayonao@gmail.com>",
   "bugs": {
     "url": "https://github.com/mohayonao/stereo-panner-shim/issues"
   },
   "dependencies": {
-    "stereo-panner-node": "^0.1.1"
+    "stereo-panner-node": "^0.1.2"
   },
   "devDependencies": {
     "browserify": "^8.1.3",
