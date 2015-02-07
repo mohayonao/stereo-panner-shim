@@ -1,57 +1,64 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <title>StereoPannerShim</title>
-    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro">
-    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
-    <style>
-      body { font-family: "Source Sans Pro", sans-serif }
-      #code { padding: 0; margin: 0; background: white; border: none }
-      #app { margin: 10px 0 }
-      #app .btn { width: 100px }
-      canvas { width: 100%; height: 240px; background: black }
-    </style>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/vue/0.11.4/vue.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js"></script>
-    <script src="build/stereo-panner-shim.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <div id="app">
-        <div class="page-header">
-          <h1>StereoPannerShim</h1>
-          <div>StereoPanner compatibility shim for legacy Web Audio API | <a href="https://github.com/mohayonao/stereo-panner-shim">GitHub</a></div>
-        </div>
+<head>
+  <meta charset="utf-8">
+  <title>StereoPannerShim</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Sans+Pro">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.css">
+  <style>
+    body { font-family: "Source Sans Pro", sans-serif }
+    canvas { width: 100%; height: 240px; background: black }
+    hr { border: none }
+    #app { margin: 10px 0 }
+    #app .btn { width: 100px }
+    .prettyprint { padding: 0; margin: 0; background: white; border: none !important }
+  </style>
+  <script src="//cdn.jsdelivr.net/es6-promise/1.0.0/promise.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/vue/0.11.4/vue.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js"></script>
+  <script src="//mohayonao.github.io/stereo-analyser-node/build/stereo-analyser-node.js"></script>
+  <script src="build/stereo-panner-shim.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div id="app">
+      <div class="page-header">
+        <h1>StereoPannerShim</h1>
         <div>
-          <h3>AutoPan demo</h3>
-          <div class="row">
-            <div class="col-md-4">
-              <button class="btn btn-default" v-on="click: toggle">{{ !audioBuffer ? "Loading.." : isPlaying ? "Stop" : "Start" }}</button>
-              <h5>Parameters</h5>
-              <div class="form-group">
-                <label>Rate: </label> <span>{{rate.toFixed(3)}}Hz</span>
-                <input type="range" name="rate" value="27" v-on="change: change">
-              </div>
-              <div class="form-group">
-                <label>Amount: </label> <span>{{amount.toFixed(3)}}</span>
-                <input type="range" name="amount" value="100" v-on="change: change">
-              </div>
-              <div class="form-group">
-                <label>Position: </label> <span>{{pos.toFixed(3)}}</span>
-                <input type="range" name="pos" value="50" v-on="change: change">
-              </div>
-            </div>
-            <div class="col-md-4">
-              <canvas id="canvasL"></canvas>
-            </div>
-            <div class="col-md-4">
-              <canvas id="canvasR"></canvas>
-            </div>
-          </div>
+          <a href="https://github.com/mohayonao/stereo-panner-shim"><img src="http://img.shields.io/badge/repository-GitHub-blue.svg?style=flat-square"></a>
+          <a href="https://travis-ci.org/mohayonao/stereo-panner-shim"><img src="http://img.shields.io/travis/mohayonao/stereo-panner-shim.svg?style=flat-square"></a>
+          <a href="https://www.npmjs.org/package/stereo-panner-shim"><img src="http://img.shields.io/npm/v/stereo-panner-shim.svg?style=flat-square"></a>
+          <a href="http://bower.io/search/?q=stereo-panner-shim"><img src="http://img.shields.io/bower/v/stereo-panner-shim.svg?style=flat-square"></a>
+          <a href="http://mohayonao.mit-license.org/"><img src="http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square"></a>
         </div>
       </div>
+      <div class="alert" role="alert" v-class="alertClass" v-text="alert"></div>
+      <div class="row">
+        <div class="col-md-4">
+          <button class="btn btn-default" v-on="click: toggle">{{ !audioBuffer ? "Loading.." : isPlaying ? "Stop" : "Start" }}</button>
+          <h5>Parameters</h5>
+          <div class="form-group">
+            <label>Rate: </label> <span>{{rate.toFixed(3)}}Hz</span>
+            <input type="range" name="rate" value="27" v-on="input: input">
+          </div>
+          <div class="form-group">
+            <label>Amount: </label> <span>{{amount.toFixed(3)}}</span>
+            <input type="range" name="amount" value="100" v-on="input: input">
+          </div>
+          <div class="form-group">
+            <label>Position: </label> <span>{{pos.toFixed(3)}}</span>
+            <input type="range" name="pos" value="50" v-on="input: input">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <canvas id="canvasL"></canvas>
+        </div>
+        <div class="col-md-4">
+          <canvas id="canvasR"></canvas>
+        </div>
+      </div>
+      <hr>
       <div class="panel panel-default">
         <div class="panel-heading">
           <h3 class="panel-title">example</h3>
@@ -61,187 +68,216 @@
         </div>
       </div>
     </div>
-    <script>
-      var AudioContext = window.AudioContext || window.webkitAudioContext;
-      var visualiser;
+  </div>
+  <script>
+  var AudioContext = window.AudioContext || window.webkitAudioContext;
+  var $ = document.getElementById.bind(document);
 
-      var $ = document.getElementById.bind(document);
-
-      function load(url) {
-        return new Promise(function(resolve, reject) {
-          var xhr = new XMLHttpRequest();
-          xhr.responseType = "arraybuffer";
-          xhr.open("GET", url);
-          xhr.onload = function() {
-            resolve(xhr.response);
-          };
-          xhr.onerror = reject;
-          xhr.send();
+  function fetch(url) {
+    return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.responseType = "arraybuffer";
+      xhr.open("GET", url);
+      xhr.onload = function() {
+        resolve({
+          arrayBuffer: function() {
+            return xhr.response;
+          }
         });
-      }
+      };
+      xhr.onerror = reject;
+      xhr.send();
+    });
+  }
 
-      function draw(analyser, canvas) {
-        var data = new Uint8Array(1024);
+  var isNativeStereoPanner = (function() {
+    return AudioContext.prototype.createStereoPanner.toString().indexOf("native") !== -1;
+  })();
+  </script>
+  <script id="example">
+  var audioContext = new AudioContext();
+  var app = {};
 
-        analyser.getByteTimeDomainData(data);
+  // audio from YouTube Audio Library
+  fetch("audio/Sunshine_in_My_Heart.mp3").then(function(res) {
+    return new Promise(function(resolve, reject) {
+      audioContext.decodeAudioData(res.arrayBuffer(), resolve, reject);
+    })
+  }).then(function(audioBuffer) {
+    app.audioBuffer = audioBuffer;
+  });
 
-        var context = canvas.context;
+  var bufferSource, autoPanRate, autoPanAmount, panner, analyser;
+  var fftSize = 2048;
+  var arrayL = new Float32Array(fftSize);
+  var arrayR = new Float32Array(fftSize);
 
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.beginPath();
+  function start() {
+    bufferSource = audioContext.createBufferSource();   // +------------------+  +-----------------+
+    autoPanRate = audioContext.createOscillator();      // | BufferSourceNode |  | OscillatorNode  |
+    autoPanAmount = audioContext.createGain();          // +------------------+  | frequency: Rate |
+    panner = audioContext.createStereoPanner();         //   |                   +-----------------+
+    analyser = new StereoAnalyserNode(audioContext);    //   |                     |
+                                                        //   |                   +--------------+
+    bufferSource.buffer = app.audioBuffer;              //   |                   | GainNode     |
+    bufferSource.start(audioContext.currentTime);       //   |                   | gain: Amount |
+    bufferSource.onended = function() {                 //   |                   +--------------+
+      app.stop();                                       //   |                     |
+    };                                                  //   |                     |
+    autoPanRate.frequency.value = app.rate;             // +------------------+    |
+    autoPanRate.start(audioContext.currentTime);        // | StereoPannerNode |    |
+    autoPanAmount.gain.value = app.amount;              // | pan: Position  <------+
+    panner.pan.value = app.pos;                         // +------------------+
+    analyser.fftSize = fftSize;                         //   |
+                                                        // +--------------------+
+    bufferSource.connect(panner);                       // | StereoAnalyserNode |
+    autoPanRate.connect(autoPanAmount);                 // +--------------------+
+    autoPanAmount.connect(panner.pan);
+    panner.connect(analyser);
+    analyser.connect(audioContext.destination);
 
-        var dx = 1024 / canvas.width;
-        for (var i = 0; i < 1024; i++) {
-          var x = i * dx;
-          var y = 0.5 * (canvas.height - (data[i] - 128) / 128 * canvas.height);
-          context.lineTo(x, y);
-        }
+    requestAnimationFrame(function animate() {
+      analyser.getFloatTimeDomainData(arrayL, arrayR);
+      app.drawTimeDomainData(arrayL, arrayR);
 
-        context.stroke();
-      }
-
-      function initialize() {
-        visualiser = audioContext.createChannelSplitter(2);
-
-        var analyserL = audioContext.createAnalyser();
-        var analyserR = audioContext.createAnalyser();
-        var merger = audioContext.createChannelMerger(2);
-        var canvasL = $("canvasL");
-        var canvasR = $("canvasR");
-
-        canvasL.width = 1024;
-        canvasL.height = 240;
-        canvasL.context = canvasL.getContext("2d");
-        canvasL.context.fillStyle = "#000";
-        canvasL.context.strokeStyle = "#0f0";
-        canvasL.context.lineWidth = 2;
-
-        canvasR.width = 1024;
-        canvasR.height = 240;
-        canvasR.context = canvasR.getContext("2d");
-        canvasR.context.fillStyle = "#000";
-        canvasR.context.strokeStyle = "#0f0";
-        canvasR.context.lineWidth = 2;
-
-        visualiser.connect(analyserL, 0);
-        visualiser.connect(analyserR, 1);
-        analyserL.connect(merger, 0, 0);
-        analyserR.connect(merger, 0, 1);
-        merger.connect(audioContext.destination);
-
-        function animate() {
-          draw(analyserL, canvasL);
-          draw(analyserR, canvasR);
-          requestAnimationFrame(animate);
-        }
+      if (app.isPlaying) {
         requestAnimationFrame(animate);
       }
-
-    </script>
-    <script id="example">
-    var audioContext = new AudioContext();
-    var app = {};
-    var bufferSource, autoPanRate, autoPanAmount, stereoPanner;
-
-    load("./audio/Sunshine_in_My_Heart.mp3").then(function(audioData) {
-      audioContext.decodeAudioData(audioData, function(result) {
-        app.audioBuffer = result;
-      });
     });
+  }
 
-    function start() {
-      bufferSource = audioContext.createBufferSource();
-      bufferSource.buffer = app.audioBuffer;
-      bufferSource.loop = true;
-      bufferSource.start(audioContext.currentTime);
+  function stop() {
+    bufferSource.stop(audioContext.currentTime);
+    bufferSource.disconnect();
+    autoPanRate.disconnect();
+    autoPanRate.stop(audioContext.currentTime);
+    autoPanAmount.disconnect();
+    panner.disconnect();
+    analyser.disconnect();
+  }
 
-      autoPanRate = audioContext.createOscillator();
-      autoPanAmount = audioContext.createGain();
-      stereoPanner = audioContext.createStereoPanner();
+  function updateParameters(rate, amount, pos) {
+    autoPanRate.frequency.value = rate;
+    autoPanAmount.gain.value = amount;
+    panner.pan.value = pos;
+  }
+  </script>
+  <script>
+  window.addEventListener("load", function() {
+    "use strict";
 
-      autoPanRate.frequency.value = 0.05;
-      autoPanRate.start(audioContext.currentTime);
-
-      bufferSource.connect(stereoPanner);
-      autoPanRate.connect(autoPanAmount);
-      autoPanAmount.connect(stereoPanner.pan);
-      stereoPanner.connect(visualiser);
+    function linlin(value, inMin, inMax, outMin, outMax) {
+      return (value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin;
+    }
+    function linexp(value, inMin, inMax, outMin, outMax) {
+      return Math.pow(outMax / outMin, (value - inMin) / (inMax - inMin)) * outMin;
     }
 
-    function stop() {
-      bufferSource.stop(audioContext.currentTime);
-      autoPanRate.stop(audioContext.currentTime);
-      bufferSource.disconnect();
-      autoPanRate.disconnect();
-      autoPanAmount.disconnect();
-      stereoPanner.disconnect();
+    function initCanvas(name) {
+      var canvas = $(name);
+
+      canvas.width = 1024;
+      canvas.height = 200;
+      canvas.context = canvas.getContext("2d");
+
+      canvas.context.fillStyle = "rgba(0, 0, 0, 0.5)";
+      canvas.context.strokeStyle = "#2ecc71";
+
+      return canvas;
     }
 
-    function changeAutoPanParameter(rate, amount, pos) {
-      autoPanRate.frequency.value = rate;
-      autoPanAmount.gain.value = amount;
-      stereoPanner.pan.value = pos;
+    var canvasL = initCanvas("canvasL");
+    var canvasR = initCanvas("canvasR");
+
+    function clear(canvas) {
+      canvas.context.fillRect(0, 0, canvas.width, canvas.height);
     }
-    </script>
 
-    <script>
-    window.onload = function() {
-      "use strict";
+    function drawTimeDomainData(canvas, array) {
+      var context = canvas.context;
 
-      function linlin(value, inMin, inMax, outMin, outMax) {
-        return (value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin;
+      var height = canvas.height;
+      var dx = canvas.width / array.length;
+
+      context.beginPath();
+      for (var i = 0; i < array.length; i++) {
+        var x = Math.round(i * dx);
+        var y = Math.round((array[i] * height + height) * 0.5);
+        context.lineTo(x, y);
       }
+      context.stroke();
+    }
 
-      function linexp(value, inMin, inMax, outMin, outMax) {
-        return Math.pow(outMax / outMin, (value - inMin) / (inMax - inMin)) * outMin;
-      }
-
-      app = new Vue({
-        el: "#app",
-        data: {
-          audioBuffer: null,
-          isPlaying: false,
-          rate: 0.05,
-          amount: 1,
-          pos: 0,
-        },
-        methods: {
-          toggle: function() {
-            if (this.audioBuffer) {
-              this.isPlaying = !this.isPlaying;
-              if (this.isPlaying) {
-                if (!visualiser) {
-                  initialize();
-                }
-                start(this.audioBuffer);
-              } else {
-                stop();
-              }
-            }
-          },
-          change: function(e) {
-            switch (e.target.name) {
-            case "rate":
-              this.rate = linexp(e.target.value, 0, 100, 0.1, 40);
-              break;
-            case "amount":
-              this.amount = linlin(e.target.value, 0, 100, 0, 1);
-              break;
-            case "pos":
-              this.pos = linlin(e.target.value, 0, 100, -1, +1);
-              break;
-            }
-            if (stereoPanner) {
-              changeAutoPanParameter(this.rate, this.amount, this.pos);
+    app = new Vue({
+      el: "#app",
+      data: {
+        audioBuffer: null,
+        isPlaying: false,
+        rate: 0.05,
+        amount: 1,
+        pos: 0,
+        alert: '',
+        alertClass: ''
+      },
+      methods: {
+        toggle: function() {
+          if (this.audioBuffer) {
+            if (this.isPlaying) {
+              this.stop();
+            } else {
+              this.start();
             }
           }
+        },
+        start: function() {
+          if (!this.isPlaying) {
+            this.isPlaying = true;
+            start();
+          }
+        },
+        stop: function() {
+          if (this.isPlaying) {
+            this.isPlaying = false;
+            stop();
+          }
+        },
+        input: function(e) {
+          switch (e.target.name) {
+          case "rate":
+            this.rate = linexp(e.target.value, 0, 100, 0.1, 40);
+            break;
+          case "amount":
+            this.amount = linlin(e.target.value, 0, 100, 0, 1);
+            break;
+          case "pos":
+            this.pos = linlin(e.target.value, 0, 100, -1, +1);
+            break;
+          }
+          if (panner) {
+            updateParameters(this.rate, this.amount, this.pos);
+          }
+        },
+        drawTimeDomainData: function(arrayL, arrayR) {
+          clear(canvasL);
+          drawTimeDomainData(canvasL, arrayL);
+          clear(canvasR);
+          drawTimeDomainData(canvasR, arrayR);
         }
-      });
+      }
+    });
 
-      // code
-      $("code").textContent = $("example").textContent;
-      prettyPrint();
-    };
-    </script>
-  </body>
+    if (isNativeStereoPanner) {
+      app.alert = "StereoPannerShim is not enabled for exists the native StereoPanner.";
+      app.alertClass = "alert-info";
+    } else {
+      app.alert = "StereoPannerShim is enabled.";
+      app.alertClass = "alert-success";
+    }
+
+    // code
+    $("code").textContent = $("example").textContent;
+    prettyPrint();
+  });
+  </script>
+</body>
 </html>
