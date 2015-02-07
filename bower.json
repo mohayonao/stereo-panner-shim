@@ -1,14 +1,14 @@
 {
   "name": "stereo-panner-shim",
   "description": "StereoPanner compatibility shim for legacy Web Audio API",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "authors": [
     "nao yonamine <mohayonao@gmail.com>"
   ],
+  "homepage": "http://mohayonao.github.io/stereo-panner-shim/",
   "ignore": [
     "**/.*",
-    "node_modules",
-    "bower_components",
+    "package.json",
     "lib",
     "test"
   ],
@@ -18,5 +18,9 @@
     "shim"
   ],
   "license": "MIT",
-  "main": "build/stereo-panner-shim.js"
+  "main": "build/stereo-panner-shim.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mohayonao/stereo-panner-shim.git"
+  }
 }
