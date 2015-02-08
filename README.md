@@ -8,6 +8,15 @@
 
 http://webaudio.github.io/web-audio-api/#the-stereopannernode-interface
 
+## Native API supports
+|                      | Support |
+| -------------------- |:-------:|
+| Google Chrome 40     | :x:     |
+| Firefox 35           | :x:     |
+| Safari 8             | :x:     |
+| Opera 27             | :x:     |
+| iOS 8                | :x:     |
+
 ## Installation
 
 npm:
