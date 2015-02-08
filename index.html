@@ -18,6 +18,8 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/vue/0.11.4/vue.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.min.js"></script>
   <script src="//mohayonao.github.io/stereo-analyser-node/build/stereo-analyser-node.js"></script>
+  <script src="//mohayonao.github.io/promise-decode-audio-data/build/promise-decode-audio-data.js"></script>
+  <script src="//mohayonao.github.io/get-float-time-domain-data/build/get-float-time-domain-data.js"></script>
   <script src="build/stereo-panner-shim.js"></script>
 </head>
 <body>
@@ -96,16 +98,6 @@
     });
   }
 
-  if (!AnalyserNode.prototype.getFloatTimeDomainData) {
-    AnalyserNode.prototype.getFloatTimeDomainData = function(array) {
-      var uint8 = new Uint8Array(array.length);
-      this.getByteTimeDomainData(uint8);
-      for (var i = 0, imax = uint8.length; i < imax; i++) {
-        array[i] = (uint8[i] - 128) / 128;
-      }
-    };
-  }
-
   var isNativeStereoPanner = (function() {
     return AudioContext.prototype.createStereoPanner.toString().indexOf("native") !== -1;
   })();
@@ -116,9 +108,7 @@
 
   // audio from YouTube Audio Library
   fetch("audio/Sunshine_in_My_Heart.mp3").then(function(res) {
-    return new Promise(function(resolve, reject) {
-      audioContext.decodeAudioData(res.arrayBuffer(), resolve, reject);
-    })
+    return audioContext.decodeAudioData(res.arrayBuffer());
   }).then(function(audioBuffer) {
     app.audioBuffer = audioBuffer;
   });
