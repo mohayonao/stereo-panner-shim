@@ -14,7 +14,7 @@ http://webaudio.github.io/web-audio-api/#the-stereopannernode-interface
 | Google Chrome 41     | :o:     |
 | Firefox 36           | :x:     |
 | Safari 8             | :x:     |
-| Opera 27             | :x:     |
+| Opera 28             | :o:     |
 | iOS 8                | :x:     |
 
 ## Installation
